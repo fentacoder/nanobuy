@@ -1,0 +1,24 @@
+﻿
+@{
+    ViewData["Title"] = "Products";
+}
+
+<h1>Manage Products</h1>
+<div class="row">
+    <div class="col-sm-4">
+        <form id="product">
+            <label style="margin-bottom: 1vh; width: 100%;text-align: start;">Picture:</label>
+            <input style="margin-bottom: 1vh; width: 100%;" type="file" id="product-image" />
+            <label style="margin-bottom: 1vh; width: 100%;text-align: start;">Name:</label>
+            <input style="margin-bottom: 1vh; width: 100%;" type="text" id="product-name" value="" maxlength="100" />
+            <label style="margin-bottom: 1vh; width: 100%;text-align: start;">Price:</label>
+            <input style="margin-bottom: 1vh; width: 100%;" type="text" id="product-price" value="0" maxlength="6" />
+            <input class="btn btn-primary nano-theme" type="submit" id="create-product" />
+        </form>
+
+    </div>
+    <div class="col-sm-4"></div>
+    <div class="col-sm-4"></div>
+</div>
+
+<script src="~/js/Product/product.js"></script>

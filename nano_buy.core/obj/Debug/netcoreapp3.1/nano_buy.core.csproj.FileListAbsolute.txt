@@ -1,0 +1,12 @@
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\bin\Debug\netcoreapp3.1\nano_buy.core.deps.json
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\bin\Debug\netcoreapp3.1\nano_buy.core.dll
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\obj\Debug\netcoreapp3.1\nano_buy.core.csprojAssemblyReference.cache
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\obj\Debug\netcoreapp3.1\nano_buy.core.AssemblyInfoInputs.cache
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\obj\Debug\netcoreapp3.1\nano_buy.core.AssemblyInfo.cs
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\bin\Debug\netcoreapp3.1\nano_buy.core.pdb
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\obj\Debug\netcoreapp3.1\nano_buy.core.dll
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\obj\Debug\netcoreapp3.1\nano_buy.core.pdb
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\bin\Debug\netcoreapp3.1\nano_buy.core.runtimeconfig.json
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\bin\Debug\netcoreapp3.1\nano_buy.core.runtimeconfig.dev.json
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\obj\Debug\netcoreapp3.1\nano_buy.core.genruntimeconfig.cache
+C:\Users\jamar\Documents\Visual Studio Projects\nanobuy\nano_buy.core\obj\Debug\netcoreapp3.1\nano_buy.core.csproj.CoreCompileInputs.cache

@@ -1,0 +1,47 @@
+﻿@model NanoShop.Web.VM.Account.LoginVM
+@{
+    ViewData["Title"] = "Login";
+}
+<div class="row">
+    <div class="col-sm-12">
+        <p class="text-center"><b>@ViewBag.Message</b></p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-4"></div>
+    <div class="col-sm-4">
+        <h3 class="text-center">Login</h3>
+        <form asp-controller="Account" asp-action="Login" method="post" asp-route-returnUrl="@ViewData["ReturnUrl"]">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label>Email</label>
+                    @Html.TextBoxFor(x => x.Email, new { @class = "form-control", @maxlength = 100 })
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label>Password</label>
+                    @Html.TextBoxFor(x => x.Password, new { @type = "password", @class = "form-control", @maxlength = 100 })
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label asp-for="RememberMe">
+                        <input style="vertical-align:-1px;margin-right:5px;" asp-for="RememberMe" />@Html.DisplayNameFor(x => x.RememberMe)?
+                    </label>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <input type="submit" class="btn btn-primary nano-theme" value="Login" />
+                    <a href="/Account/Register">Register as a new user</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-sm-4"></div>
+</div>

@@ -1,0 +1,81 @@
+﻿@using Microsoft.Extensions.Options
+@model List<NanoShop.Core.Entities.Product>
+@inject IOptions<NanoShop.Settings.StripeSettings> Stripe
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome To NanoShop</h1>
+</div>
+
+<h1>Products</h1>
+<div class="row">
+    @{
+        var index = 0;
+        foreach (var product in Model)
+        {
+            index = index + 1;
+            var stripeProductPrice = product.Price * 100;
+            <div class="col-sm-4" style="padding:15px;">
+                <img src="~/product-images/@product.FilePath" alt="Product Image" style="margin:10px auto; width:100%;height:225px;border-radius:5px;box-shadow:0px 0px 10px gray;" />
+                <span id="name-@index" style="display:none;">@product.Name</span>
+                <span>Price: <span><b id="price-@index">$@product.Price</b></span></span>
+                <span><img class="process-paypal-payment" id="paypal-@index" src="~/images/paypal.png" alt="PayPal Image" style="width:80px;height:80px;" /> </span>
+                <div class="process-stripe-payment" id="stripe-@index">
+                    <form asp-action="StripePayment" asp-controller="Home" method="post">
+                        <script src="//checkout.stripe.com/v2/checkout.js" class="stripe-button"
+                                data-key="@Stripe.Value.PublishableKey"
+                                data-locale="auto"
+                                data-description="NanoShop Strip Payment"
+                                data-amount="@stripeProductPrice">
+                        </script>
+                    </form>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+
+<script>
+
+    $(".process-stripe-payment").on("click", function () {
+        var id = $(this).attr("id").replace("stripe-", "");
+        var model = {};
+        model["Name"] = $("#name-" + id).text();
+        model["Price"] = parseFloat($("#price-" + id).text().replace("$", ""));
+        var stringifiedModel = JSON.stringify(model);
+        $.ajax({
+            contentType: "application/json",
+            url: NanoShop.BasePath + "home/saveproductorder",
+            method: NanoShop.POST,
+            data: stringifiedModel,
+            error: function (error) {
+                console.log(error)
+            },
+            success: function (response) {
+            }
+        });
+    });
+
+    $(".process-paypal-payment").on("click", function () {
+        var id = $(this).attr("id").replace("paypal-", "");
+        var model = {};
+        model["Name"] = $("#name-" + id).text();
+        model["Price"] = parseFloat($("#price-" + id).text().replace("$", ""));
+        var stringifiedModel = JSON.stringify(model);
+        $.ajax({
+            contentType: "application/json",
+            url: NanoShop.BasePath + "home/saveproductorder",
+            method: NanoShop.POST,
+            data: stringifiedModel,
+            error: function (error) {
+                console.log(error)
+            },
+            success: function (response) {
+                window.location.href = "/home/PaymentWithPayPal";
+            }
+        });
+    });
+</script>

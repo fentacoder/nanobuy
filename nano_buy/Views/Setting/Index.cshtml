@@ -1,0 +1,36 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<NanoShop.Core.Entities.ApplicationUser> signInManager
+
+@{
+    ViewData["Title"] = "Setting";
+}
+
+<h1>Settings</h1>
+<div class="row">
+    <div class="col-sm-4">
+        <ul>
+            <li>
+                <span>@ViewBag.Message</span>
+                <form method="post" asp-action="DeleteAccount" asp-controller="Account">
+                    <button type="submit" class="nnav-link btn btn-link">Delete Account</button>
+                </form>
+            </li>
+            <li>
+                <form method="post" asp-action="Logout" asp-controller="Account">
+                    <button type="submit" class="nnav-link btn btn-link">Logout</button>
+                </form>
+            </li>
+            @if (User.IsInRole(NanoShop.Common.StaticRoles.Admin))
+            {
+                <li>
+                    <form method="post" asp-action="Index" asp-controller="Product">
+                        <button type="submit" class="nnav-link btn btn-link">Manage Products</button>
+                    </form>
+                </li>
+            }
+        </ul>
+    </div>
+    <div class="col-sm-4"></div>
+    <div class="col-sm-4"></div>
+</div>
+
