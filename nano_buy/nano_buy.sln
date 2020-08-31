@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30330.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nano_buy", "nano_buy.csproj", "{E8EA36D0-FE25-4DD1-980E-4E112B80F6F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nano_buy.core", "..\nano_buy.core\nano_buy.core.csproj", "{8031A8CE-E5B4-448B-9FFF-F9D4EC562BCA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nano_buy_api", "..\nano_buy_api\nano_buy_api.csproj", "{8245D1DA-239D-4286-B1D9-D83CDE2BD6F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{E8EA36D0-FE25-4DD1-980E-4E112B80F6F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8EA36D0-FE25-4DD1-980E-4E112B80F6F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8EA36D0-FE25-4DD1-980E-4E112B80F6F4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8031A8CE-E5B4-448B-9FFF-F9D4EC562BCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8031A8CE-E5B4-448B-9FFF-F9D4EC562BCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8031A8CE-E5B4-448B-9FFF-F9D4EC562BCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8031A8CE-E5B4-448B-9FFF-F9D4EC562BCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8245D1DA-239D-4286-B1D9-D83CDE2BD6F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8245D1DA-239D-4286-B1D9-D83CDE2BD6F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8245D1DA-239D-4286-B1D9-D83CDE2BD6F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8245D1DA-239D-4286-B1D9-D83CDE2BD6F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

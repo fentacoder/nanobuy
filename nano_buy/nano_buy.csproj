@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\nano_buy.core\nano_buy.core.csproj" />
+    <ProjectReference Include="..\nano_buy_api\nano_buy_api.csproj" />
   </ItemGroup>
 
 </Project>

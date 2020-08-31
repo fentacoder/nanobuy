@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using NanoShop.Core.Repositories.Products;
-using NanoShop.PayPal;
 using nano_buy.Models;
 using nano_buy.Models.Products;
 using Newtonsoft.Json;
@@ -15,6 +13,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Net.Http;
+using nano_buy.Utils;
+using nano_buy_api.Entities;
+using nano_buy.View_Models;
 
 namespace NanoShop.Web.Controllers
 {
@@ -23,21 +25,32 @@ namespace NanoShop.Web.Controllers
     {
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly IAuthorizationService _authorizationService;
-        private readonly IProductRepository _productRepository;
-        private readonly IPayPalPayment _payPalPayment;
+        private HttpClass _httpClass;
 
-        public HomeController(Microsoft.Extensions.Configuration.IConfiguration configuration, IAuthorizationService authorizationService, IProductRepository productRepository,
-            IPayPalPayment payPalPayment)
+        public HomeController(Microsoft.Extensions.Configuration.IConfiguration configuration, IAuthorizationService authorizationService,
+            HttpClass httpClass)
         {
             _configuration = configuration;
             _authorizationService = authorizationService;
-            _productRepository = productRepository;
-            _payPalPayment = payPalPayment;
+            _httpClass = httpClass;
         }
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var productList = _productRepository.GetAll().OrderByDescending(x => x.CreatedDateTime).Skip(0).Take(10).ToList();
-            return View(productList);
+            using (HttpResponseMessage response = await _httpClass.ApiClient.GetAsync("api/v1/home/getallproducts"))
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    string tempStr = await response.Content.ReadAsStringAsync();
+                    IEnumerable<ViewProduct> productList = JsonConvert.DeserializeObject<List<ViewProduct>>(tempStr);
+                    productList = productList.OrderByDescending(x => x.CreatedDateTime).Skip(0).Take(10).ToList();
+                    return View(productList);
+                }
+                else
+                {
+                    Console.WriteLine(response.ReasonPhrase);
+                    return View();
+                }
+            }
         }
 
         public IActionResult Privacy()
@@ -70,47 +83,48 @@ namespace NanoShop.Web.Controllers
             var paymentResponseModel = new PaymentResponseModel();
             try
             {
-                var apiContext = GetAPIContext();
                 var payerId = Request.Query["payerId"];
                 if (string.IsNullOrWhiteSpace(payerId))
                 {
                     var baseUrl = new Uri(Request.GetDisplayUrl()).Scheme + "://" + new Uri(Request.GetDisplayUrl()).Authority + "/Home/PaymentWithPayPal?";
                     var guid = Convert.ToString(new Random().Next(1000)) + DateTime.Now.Ticks;
                     var orderDetails = JsonConvert.DeserializeObject<ProductOrder>(HttpContext.Session.GetString("ProductDetails"));
-                    var createPayment = _payPalPayment.CreatePayment(apiContext, baseUrl + "guid=" + guid, orderDetails);
-                    if (createPayment != null)
-                    {
-                        var approvalLink = createPayment.links.FirstOrDefault(x => x.rel.ToLower().Trim() == "approval_url");
-                        var paypalRedirectUrl = string.Empty;
-                        if (approvalLink != null)
-                            paypalRedirectUrl = approvalLink.href;
 
-                        HttpContext.Session.SetString(guid, createPayment.id);
-                        return Redirect(paypalRedirectUrl);
-                    }
-                    else
+                    Dictionary<String, String> tempDict = new Dictionary<string, string>
                     {
-                        paymentResponseModel.Message = "Error occured while creating payment";
-                        return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
+                        {"paymentInfo", baseUrl + "guid=" + guid},
+                        {"orderDetails",orderDetails.ToString()}
+                    };
+
+                    var paymentJson = System.Text.Json.JsonSerializer.Serialize(orderDetails);
+
+                    using (HttpResponseMessage response = await _httpClass.ApiClient.PostAsJsonAsync("api/v1/paypal/pay", paymentJson))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            string paypalRedirectUrl = await response.Content.ReadAsStringAsync();
+                            if(paypalRedirectUrl.Length > 0)
+                            {
+                                return Redirect(paypalRedirectUrl);
+                            }
+                            else
+                            {
+                                paymentResponseModel.Message = "Error occured while creating payment";
+                                return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine(response.ReasonPhrase);
+                            paymentResponseModel.Message = "Error occured while creating payment";
+                            return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
+                        }
                     }
                 }
                 else
                 {
-                    var guid = Request.Query["guid"];
-                    var executePayment = _payPalPayment.ExecutePayment(apiContext, payerId, HttpContext.Session.GetString(guid));
-                    if (executePayment.state.ToLower() != "approved")
-                    {
-                        paymentResponseModel.Message = "Payment Fail";
-                        return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
-                    }
-                    else
-                    {
-                        HttpContext.Session.SetString(guid, string.Empty);
-                        HttpContext.Session.SetString("ProductDetails", string.Empty);
-                        paymentResponseModel.Message = "Payment Successful";
-
-                        return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
-                    }
+                    paymentResponseModel.Message = "Error occured while creating payment";
+                    return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
                 }
             }
             catch (Exception e)
@@ -121,81 +135,49 @@ namespace NanoShop.Web.Controllers
             return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
         }
 
-        public string GetAccessToken()
-        {
-            var clientId = _configuration.GetSection("AppSettings:PayPal:ClientId").Value;
-            var secretId = _configuration.GetSection("AppSettings:PayPal:SecretId").Value;
-            var accessTokend = new OAuthTokenCredential(clientId, secretId, GetConfig());
-            var asas = accessTokend.GetAccessToken();
-            return asas;
-        }
-
-        public APIContext GetAPIContext()
-        {
-
-            var apiContext = new APIContext(GetAccessToken());
-            apiContext.Config = GetConfig();
-            return apiContext;
-        }
-
-        public Dictionary<string, string> GetConfig()
-        {
-            var config = new Dictionary<string, string>();
-            config.Add("mode", _configuration.GetSection("AppSettings:PayPal:Mode").Value);
-            config.Add("connectionTimeout", _configuration.GetSection("AppSettings:PayPal:ConnectionTimeout").Value);
-            config.Add("requestRetries", _configuration.GetSection("AppSettings:PayPal:RequestRetries").Value);
-            config.Add("clientId", _configuration.GetSection("AppSettings:PayPal:ClientId").Value);
-            config.Add("secretId", _configuration.GetSection("AppSettings:PayPal:SecretId").Value);
-            return config;
-        }
-
 
         //stripe
-        public IActionResult StripePayment(string stripeEmail, string stripeToken)
+        public async Task<IActionResult> StripePayment(string stripeEmail, string stripeToken)
         {
             var paymentResponseModel = new PaymentResponseModel();
             try
             {
-                var customers = new CustomerService();
-                var charges = new ChargeService();
-                var customer = customers.Create(new CustomerCreateOptions
+                Dictionary<String, String> tempDict = new Dictionary<string, string>
                 {
-                    Email = stripeEmail,
-                    Source = stripeToken
-                });
-                var orderDetails = JsonConvert.DeserializeObject<ProductOrder>(HttpContext.Session.GetString("ProductDetails"));
-                var charge = charges.Create(new ChargeCreateOptions
+                    {"stripeEmail",stripeEmail },
+                    {"stripeToken",stripeToken }
+                };
+                var stripeJson = System.Text.Json.JsonSerializer.Serialize(tempDict);
+    
+                using (HttpResponseMessage response = await _httpClass.ApiClient.PostAsJsonAsync("api/v1/stripe/pay", stripeJson))
                 {
-                    Amount = Convert.ToInt64(orderDetails.Price*100),
-                    Description = "Stripe Payment",
-                    Currency = "usd",
-                    Customer = customer.Id,
-                    ReceiptEmail = stripeEmail,
-                    Metadata = new Dictionary<string, string>() {
-                {"Product Name", orderDetails.Name},
-                {"Price",orderDetails.Price.ToString()}
-            }
-                });
-                if (charge.Status == "succeeded")
-                {
-                    HttpContext.Session.SetString("ProductDetails", string.Empty);
-                    string balanceTransactionId = charge.BalanceTransactionId;
-                    paymentResponseModel.Message = "Payment Successful";
-                    return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
-                }
-                else
-                {
-                    paymentResponseModel.Message = "Payment Fail";
-                    return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string stripeResponse = await response.Content.ReadAsStringAsync();
+                        if (stripeResponse.Length > 0)
+                        {
+                            paymentResponseModel.Message = "Payment Successful";
+                            return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
+                        }
+                        else
+                        {
+                            paymentResponseModel.Message = "Payment Fail";
+                            return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine(response.ReasonPhrase);
+                        paymentResponseModel.Message = "Payment Fail";
+                        return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
+                    }
                 }
             }
             catch (Exception e)
             {
-                paymentResponseModel.Message = "Error occured while processing payment";
-                RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
+                paymentResponseModel.Message = "Payment Fail";
+                return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
             }
-
-            return RedirectToAction("PaymentStatus", "Home", paymentResponseModel);
         }
 
     }
